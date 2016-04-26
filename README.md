@@ -11,7 +11,7 @@ Matt.Schwabenbauer@ctl.io
 
 ### Running the script
 
-Before running this script, there are three lines of code that must be manually modified. These are the account alias to execute the script for, the number of days the data will be retained, the backup frequency of the policy, and the storage region where the backups will be stored.
+Before running this script, there are four lines of code that must be manually modified. These are the account alias to execute the script for, the number of days the data will be retained, the backup frequency of the policy, and the storage region where the backups will be stored.
 
 All the modifiable variables begin on line 42.
 
