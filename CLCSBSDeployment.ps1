@@ -8,6 +8,9 @@ This script will iterate through every server in a given account alias, detect w
 Separate policies will be created for Windows and Linux, and the storage paths will be appropriately assigned to each.
 
 There are a number of variables you may want to change before running this script. These variables begin on line 40.
+If you do not modify the account alias before running the script, you will be prompted for an alias before execution.
+
+Before any changes are made, you will be notified of the backup policy settings and the account they will be applied to. You will be prompted to continue execution.
 
 An output file with results of the operation will be stored in C:\users\public\CLC\SBSDeployment.
 
@@ -42,6 +45,27 @@ $retentionDays = 7 # The number of days backup data will be retained
 $backupIntervalHours = 12 # The backup frequency of the Policy specified in hours
 $storageRegion = "US WEST" # Region where backups are stored, can be "US EAST", "US WEST", "CANADA", "GREAT BRITAIN", "GERMANY", "APAC"
 $accountAlias = "XXXX" # The account alias that the Policy and Servers belong to
+
+if ($accountAlias -eq "XXXX")
+{
+    $accountAlias = Read-Host "Please enter the account alias you would like to apply a Simple Backup Service policy to"
+}
+else
+{
+    # Do nothing
+}
+
+$continue = Read-Host "Applying a $retentionDays day backup retention policy with $backupIntervalHours hour intervals storing data in $storageRegion to account alias $accountAlias. Confirm? (Y/N)"
+
+if ($continue -eq "Y")
+{
+    # Do nothing
+}
+else
+{
+    Write-Verbose "Operation terminated."
+    exit
+}
 
 # Session scope variables that should not be modified
 $body = $null
