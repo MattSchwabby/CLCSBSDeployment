@@ -7,7 +7,7 @@ Matt.Schwabenbauer@ctl.io
 This script will iterate through every server in a given account alias, detect which storage paths are being used, and create SBS policies for the associated OS for those paths.
 Separate policies will be created for Windows and Linux, and the storage paths will be appropriately assigned to each.
 
-There are a number of variables you may want to change before running this script. These variables begin on line 40.
+There are a number of variables you may want to change before running this script. These variables begin on line 43.
 If you do not modify the account alias before running the script, you will be prompted for an alias before execution.
 
 Before any changes are made, you will be notified of the backup policy settings and the account they will be applied to. You will be prompted to continue execution.
@@ -29,13 +29,14 @@ New-Item -ItemType Directory -Force -Path C:\Users\Public\CLC\SBSDeployment
 Write-Verbose "Logging in to CenturyLink Cloud v2 API." -Verbose
 try
 {
-$global:CLCV2cred = Get-Credential -message "Please enter your Control portal Logon" -ErrorAction Stop 
+$global:CLCV2cred = Get-Credential -message "Please enter your CenturyLink Cloud Control Portal credentials." -ErrorAction Stop 
 $body = @{username = $CLCV2cred.UserName; password = $CLCV2cred.GetNetworkCredential().password} | ConvertTo-Json 
 $global:resttoken = Invoke-RestMethod -uri "https://api.ctl.io/v2/authentication/login" -ContentType "Application/JSON" -Body $body -Method Post 
 $HeaderValue = @{Authorization = "Bearer " + $resttoken.bearerToken}
 }
 catch
 {
+Write-Verbose "Login information is incorrect. Terminating operation."
 $error[0]
 exit
 }
@@ -44,7 +45,7 @@ exit
 $retentionDays = 7 # The number of days backup data will be retained
 $backupIntervalHours = 12 # The backup frequency of the Policy specified in hours
 $storageRegion = "US WEST" # Region where backups are stored, can be "US EAST", "US WEST", "CANADA", "GREAT BRITAIN", "GERMANY", "APAC"
-$accountAlias = "XXXX" # The account alias that the Policy and Servers belong to
+$accountAlias = "MSCH" # The account alias that the Policy and Servers belong to
 
 if ($accountAlias -eq "XXXX")
 {
@@ -69,7 +70,11 @@ else
 
 # Session scope variables that should not be modified
 $body = $null
-$myServers = $null
+$myServers = @()
+$paths = @()
+$server = $null
+$myServer = $null
+$dataCenter = $null
 $dataCenters = $null
 $serverDetails = @()
 $winPaths = @()
@@ -119,12 +124,12 @@ function createPolicy
 {
     if ($OS -eq "Windows")
     {
-        $paths = $winPaths
+        $paths = [array]$winPaths
         $SBSName = "SBS Policy Created for Windows from the API on $todaysDate"
     } # end if
     else
     {
-        $paths = $linPaths
+        $paths = [array]"/" # Since Linux file paths roll up to /, backing up / will backup the entire file system of any Linux machine
         $SBSName = "SBS Policy Created for Linux from the API on $todaysDate"
     } # end else
     $url = "https://api.backup.ctl.io/clc-backup-api/api/accountPolicies"
@@ -187,11 +192,11 @@ forEach ($serverDetail in $serverDetails)
     {
         if ($thispath.startsWith("/"))
         {
-            $linPaths += $thispath
+            # Do nothing for Linux paths
         } # end if
         elseif ($thispath.startsWith("(swap)")) # Remove Linux swap paths as SBS will not back these up
         {
-            "Removed swap path"
+            # Do nothing for swap paths
         } # end elseif
         else
         {
@@ -200,12 +205,11 @@ forEach ($serverDetail in $serverDetails)
     } # end forEach
 } # end forEach
 
-# Remove duplicate paths in the $linPaths and $winPaths arrays
-$linPaths = $linPaths | select-object -unique
+# Remove duplicate paths in the $winPaths array
 $winPaths = $winPaths | select-object -unique
 
-"Linux paths are $linpaths"
-"Windows paths are $winpaths"
+"Linux path that will be backed up is /"
+"Windows paths that will be backed up are $winpaths"
 
 # Create Simple Backup Policies
 forEach ($OS in $OSes)
