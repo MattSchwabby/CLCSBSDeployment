@@ -7,7 +7,7 @@ Matt.Schwabenbauer@ctl.io
 This script will iterate through every server in a given account alias, detect which storage paths are being used, and create SBS policies for the associated OS for those paths.
 Separate policies will be created for Windows and Linux, and the storage paths will be appropriately assigned to each.
 
-There are a number of variables you may want to change before running this script. These variables begin on line 43.
+There are a number of variables you may want to change before running this script. These variables begin on line 44.
 If you do not modify the account alias before running the script, you will be prompted for an alias before execution.
 
 Before any changes are made, you will be notified of the backup policy settings and the account they will be applied to. You will be prompted to continue execution.
@@ -45,7 +45,7 @@ exit
 $retentionDays = 7 # The number of days backup data will be retained
 $backupIntervalHours = 12 # The backup frequency of the Policy specified in hours
 $storageRegion = "US WEST" # Region where backups are stored, can be "US EAST", "US WEST", "CANADA", "GREAT BRITAIN", "GERMANY", "APAC"
-$accountAlias = "MSCH" # The account alias that the Policy and Servers belong to
+$accountAlias = "XXXX" # The account alias that the Policy and Servers belong to
 
 if ($accountAlias -eq "XXXX")
 {
